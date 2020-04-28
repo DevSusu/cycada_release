@@ -15,9 +15,9 @@ def load_data(name, dset, batch=64, rootdir='', num_channels=3,
         image_size=32, download=True, kwargs={}):
     is_train = (dset == 'train')
     if isinstance(name, list) and len(name) == 2: # load adda data
-        src_dataset = get_dataset(name[0], join(rootdir, name[0]), dset, 
+        src_dataset = get_dataset(name[0], join(rootdir, name[0]), dset,
                 image_size, num_channels, download=download)
-        tgt_dataset = get_dataset(name[1], join(rootdir, name[1]), dset, 
+        tgt_dataset = get_dataset(name[1], join(rootdir, name[1]), dset,
                 image_size, num_channels, download=download)
         dataset = AddaDataset(src_dataset, tgt_dataset)
     else:
@@ -25,7 +25,7 @@ def load_data(name, dset, batch=64, rootdir='', num_channels=3,
                 download=download)
     if len(dataset) == 0:
         return None
-    loader = torch.utils.data.DataLoader(dataset, batch_size=batch, 
+    loader = torch.utils.data.DataLoader(dataset, batch_size=batch,
             shuffle=is_train, **kwargs)
     return loader
 
@@ -53,25 +53,32 @@ def get_transform2(dataset_name, net_transform, downscale):
         target_transform.append(
                 transforms.Resize(orig_size // downscale,
                     interpolation=Image.NEAREST))
-    transform.extend([transforms.Resize(orig_size), net_transform]) 
+    transform.extend([transforms.Resize(orig_size), net_transform])
     target_transform.extend([transforms.Resize(orig_size, interpolation=Image.NEAREST),
-        to_tensor_raw]) 
+        to_tensor_raw])
     transform = transforms.Compose(transform)
     target_transform = transforms.Compose(target_transform)
     return transform, target_transform
 
 
+def rgb_lambda(x):
+    return x.convert('RGB')
+
+def l_lambda(x):
+    return x.convert('L')
 
 def get_transform(params, image_size, num_channels):
     # Transforms for PIL Images: Gray <-> RGB
-    Gray2RGB = transforms.Lambda(lambda x: x.convert('RGB'))
-    RGB2Gray = transforms.Lambda(lambda x: x.convert('L'))
+    # Gray2RGB = transforms.Lambda(lambda x: x.convert('RGB'))
+    # RGB2Gray = transforms.Lambda(lambda x: x.convert('L'))
+    Gray2RGB = transforms.Lambda(rgb_lambda)
+    RGB2Gray = transforms.Lambda(l_lambda)
 
     transform = []
     # Does size request match original size?
     if not image_size == params.image_size:
         transform.append(transforms.Resize(image_size))
-   
+
     # Does number of channels requested match original?
     if not num_channels == params.num_channels:
         if num_channels == 1:
@@ -82,15 +89,20 @@ def get_transform(params, image_size, num_channels):
             print('NumChannels should be 1 or 3', num_channels)
             raise Exception
 
-    transform += [transforms.ToTensor(), 
+    transform += [transforms.ToTensor(),
             transforms.Normalize((params.mean,), (params.std,))]
 
     return transforms.Compose(transform)
 
+def tmp_lambda(x):
+    if isinstance(x, (list, np.ndarray)) and len(x) == 2:
+        return x[:,0]
+    else:
+        return x
+
 def get_target_transform(params):
     transform = params.target_transform
-    t_uniform = transforms.Lambda(lambda x: x[:,0] 
-            if isinstance(x, (list, np.ndarray)) and len(x) == 2 else x)
+    t_uniform = transforms.Lambda(tmp_lambda)
     if transform is None:
         return t_uniform
     else:
@@ -140,7 +152,7 @@ class DatasetParams(object):
 def get_dataset(name, rootdir, dset, image_size, num_channels, download=True):
     is_train = (dset == 'train')
     print('get dataset:', name, rootdir, dset)
-    params = data_params[name] 
+    params = data_params[name]
     transform = get_transform(params, image_size, num_channels)
     target_transform = get_target_transform(params)
     return dataset_obj[name](rootdir, train=is_train, transform=transform,

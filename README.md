@@ -7,7 +7,8 @@ A Enhancement of [CyCADA](https://arxiv.org/pdf/1711.03213.pdf).
 ```
 $ git clone --recursive https://github.com/DevSusu/cycada_release.git cycada
 $ cd cycada
-$ python -m venv ENV
+
+$ python3 -m venv ENV
 $ source ENV/bin/activate
 (ENV) $ pip install -r requirements.txt
 (ENV) $ cd cyclegan
@@ -19,7 +20,8 @@ $ source ENV/bin/activate
 * dataroot에 svhn의 test, train.mat 이 있어야 합니다
 * train 시 `./cyclegan/checkpoints/loss_log.txt` 에 loss 정보가 계속 append 됩니다
 * train 시` --batchSize` , `--nThreads` 는 기기에 따라 변경하면 됩니다.
-* perceptual loss 없는 버전은 `--model cycle_gan_semantic` 옵션을 주면 됨. 1~31 사이로 설정
+* perceptual loss 없는 버전은 `--model cycle_gan_semantic` 옵션을 주면 됨
+* `--model cycle_gan_semantic_percep --percep=1` percep은 1~31 사이로 설정
 * translate 결과는 `--results_dir` 옵션에 따라 저장됨
 
 ```
@@ -45,5 +47,4 @@ $ source ENV/bin/activate
 (ENV) $ python train_adda.py
 ```
 
-위 1,2를 `percep` 옵션과 `eval_{percep}.txt` 파일명을 바꿔주면서 계속해서 실행합니다.
 

@@ -18,15 +18,15 @@ if __name__ == '__main__':
     ###################################
     # Set to your preferred data path #
     ###################################
-    datadir = '/mnt/c/x/jhoffman'
+    datadir = '/x/devsusu/'
     ###################################
 
     # Choose GPU ID
     os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
     # Problem Params
-    src = 'svhn2mnist'
-    tgt = 'mnist'
+    src = 'mnist2svhn'
+    tgt = 'svhn'
     iteration = 1 #'no_cycle'
 
     base_src = src.split('2')[0]

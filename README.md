@@ -32,13 +32,13 @@ $ source ENV/bin/activate
                         --print_freq 1000 --resize_or_crop=None --loadSize=32 --fineSize=32 \
                         --which_model_netD n_layers --n_layers_D 3 --lambda_A 1 --lambda_B 1 \
                         --lambda_identity 0 --no_flip  --which_direction AtoB \
-                        --model cycle_gan_semantic_percep --percep=1 --nThreads 8 --batchSize 50 --dataset_mode svhn_mnist --dataroot /x/devsusu/
+                        --model cycle_gan_semantic_percep --percep=1 --nThreads 8 --batchSize 50 --dataset_mode mnist_svhn --dataroot /x/devsusu/
 
 (ENV) $ python test.py --name cycada_svhn2mnist_noIdentity --no_flip \ 
                        --resize_or_crop=None --loadSize=32 --fineSize=32 \
                        --which_model_netD n_layers --n_layers_D 3 --model cycle_gan_semantic \
                        --batchSize 100 --phase train --how_many 100000 --which_epoch 75 \
-                       --which_direction AtoB --dataset_mode svhn_mnist --dataroot /x/devsusu/ --results_dir /x/devsusu/mnist2svhn
+                       --which_direction AtoB --dataset_mode mnist_svhn --dataroot /x/devsusu/ --results_dir /x/devsusu/mnist2svhn
 ```
 
 ## 2. 결과 Evaluating

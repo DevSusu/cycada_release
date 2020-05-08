@@ -1,16 +1,12 @@
 # CyCADA Enhancement with 3-Level Cycle-Consistency
 A Enhancement of [CyCADA](https://arxiv.org/pdf/1711.03213.pdf).
-
-## Setup
-* Check out the repo (recursively will also checkout the CyCADA fork of the CycleGAN repo).<br>
-`git clone --recursive https://github.com/DevSusu/cycada_release.git cycada`
-* Install python requirements
-    * pip install -r requirements.txt
     
 # Train image adaptation only (digits)
 
 ## 0. VirtualENV 생성
 ```
+$ git clone --recursive https://github.com/DevSusu/cycada_release.git cycada
+$ cd cycada
 $ python -m venv ENV
 $ source ENV/bin/activate
 (ENV) $ pip install -r requirements.txt
@@ -19,7 +15,7 @@ $ source ENV/bin/activate
 ```
 
 ## 1. mnist -> svhn 이미지 Translation
-* dataroot는 임의로 설정했습니다. 변경하신다면 아래 두 command와 train_adda.py 파일을 수정하시면 합니다.
+* dataroot는 임의로 설정했습니다. **변경하신다면 아래 두 command와 train_adda.py 파일을 수정**하시면 됩니다.
 * dataroot에 svhn의 test, train.mat 이 있어야 합니다
 * train 시 `./cyclegan/checkpoints/loss_log.txt` 에 loss 정보가 계속 append 됩니다
 * train 시` --batchSize` , `--nThreads` 는 기기에 따라 변경하면 됩니다.
@@ -46,7 +42,7 @@ $ source ENV/bin/activate
 
 ```
 (ENV) $ cd ..
-(ENV) $ python train_adda.py > eval_0.txt
+(ENV) $ python train_adda.py
 ```
 
 위 1,2를 `percep` 옵션과 `eval_{percep}.txt` 파일명을 바꿔주면서 계속해서 실행합니다.

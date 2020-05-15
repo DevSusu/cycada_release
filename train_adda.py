@@ -108,7 +108,7 @@ if __name__ == '__main__':
     f.close()
 
     # cyclegan loss, opt 정보 복사해오기
-    os.system('cp cyclegan/checkpoints/*.txt runs/'.format(cm))
+    os.system('cp checkpoints/*.txt runs/'.format(cm))
 
     # 결과 파일 이름 변경
     os.system('mv run/eval.txt runs/eval_{:.2f}.txt'.format(cm))

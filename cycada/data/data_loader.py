@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 
 from ..util import to_tensor_raw
 
-def load_data(name, dset, batch=64, rootdir='', num_channels=3,
+def load_data(name, dset, file, batch=64, rootdir='', num_channels=3,
         image_size=32, download=True, kwargs={}):
     is_train = (dset == 'train')
     if isinstance(name, list) and len(name) == 2: # load adda data
@@ -22,7 +22,7 @@ def load_data(name, dset, batch=64, rootdir='', num_channels=3,
         dataset = AddaDataset(src_dataset, tgt_dataset)
     else:
         dataset = get_dataset(name, rootdir, dset, image_size, num_channels,
-                download=download)
+                file, download=download)
     if len(dataset) == 0:
         return None
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch,
@@ -149,9 +149,10 @@ class DatasetParams(object):
     num_cls      = 10
     target_transform = None
 
-def get_dataset(name, rootdir, dset, image_size, num_channels, download=True):
+def get_dataset(name, rootdir, dset, image_size, num_channels, file, download=True):
     is_train = (dset == 'train')
     print('get dataset:', name, rootdir, dset)
+    file.write('get dataset: %s, %s, %s' % (name, rootdir, dset) )
     params = data_params[name]
     transform = get_transform(params, image_size, num_channels)
     target_transform = get_target_transform(params)

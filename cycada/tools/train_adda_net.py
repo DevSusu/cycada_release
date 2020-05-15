@@ -6,40 +6,40 @@ import numpy as np
 
 # Import from torch
 import torch
-import torch.nn as nn 
+import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-# Import from within Package 
+# Import from within Package
 from ..models.models import get_model
 from ..data.data_loader import load_data
 from ..tools.test_task_net import test
 from ..tools.util import make_variable
 
-def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch):
-   
+def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch, file):
+
     log_interval = 100 # specifies how often to display
-  
-    N = min(len(loader_src.dataset), len(loader_tgt.dataset)) 
+
+    N = min(len(loader_src.dataset), len(loader_tgt.dataset))
     joint_loader = zip(loader_src, loader_tgt)
-      
+
     net.train()
-   
+
     last_update = -1
     for batch_idx, ((data_s, _), (data_t, _)) in enumerate(joint_loader):
-        
+
         # log basic adda train info
         info_str = "[Train Adda] Epoch: {} [{}/{} ({:.2f}%)]".format(
             epoch, batch_idx*len(data_t), N, 100 * batch_idx / N)
-   
+
         ########################
         # Setup data variables #
         ########################
         data_s = make_variable(data_s, requires_grad=False)
         data_t = make_variable(data_t, requires_grad=False)
-        
+
         ##########################
         # Optimize discriminator #
         ##########################
@@ -51,7 +51,7 @@ def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch):
         score_s = net.src_net(data_s)
         score_t = net.tgt_net(data_t)
         f = torch.cat((score_s, score_t), 0)
-        
+
         # predict with discriminator
         pred_concat = net.discriminator(f)
 
@@ -70,7 +70,7 @@ def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch):
         # compute discriminator acc
         pred_dis = torch.squeeze(pred_concat.max(1)[1])
         acc = (pred_dis == label_concat).float().mean()
-        
+
         # log discriminator update info
         info_str += " acc: {:0.1f} D: {:.3f}".format(acc.item()*100, loss_dis.item())
 
@@ -80,9 +80,9 @@ def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch):
 
         # only update net if discriminator is strong
         if acc.item() > 0.6:
-            
+
             last_update = batch_idx
-        
+
             # zero out optimizer gradients
             opt_dis.zero_grad()
             opt_net.zero_grad()
@@ -92,31 +92,32 @@ def train(loader_src, loader_tgt, net, opt_net, opt_dis, epoch):
 
             # predict with discriinator
             pred_tgt = net.discriminator(score_t)
-            
+
             # create fake label
             label_tgt = make_variable(torch.ones(pred_tgt.size(0)).long(), requires_grad=False)
-            
+
             # compute loss for target network
-            loss_gan_t = net.gan_criterion(pred_tgt, label_tgt) 
+            loss_gan_t = net.gan_criterion(pred_tgt, label_tgt)
             loss_gan_t.backward()
 
             # optimize tgt network
             opt_net.step()
 
             # log net update info
-            info_str += " G: {:.3f}".format(loss_gan_t.item()) 
+            info_str += " G: {:.3f}".format(loss_gan_t.item())
 
         ###########
         # Logging #
         ###########
         if batch_idx % log_interval == 0:
             print(info_str)
+            file.write(info_str)
 
     return last_update
 
 
-def train_adda(src, tgt, model, num_cls, num_epoch=200,
-        batch=128, datadir="", outdir="", 
+def train_adda(src, tgt, model, num_cls, file, num_epoch=200,
+        batch=128, datadir="", outdir="",
         src_weights=None, weights=None, lr=1e-5, betas=(0.9,0.999),
         weight_decay=0):
     """Main function for training ADDA."""
@@ -131,42 +132,44 @@ def train_adda(src, tgt, model, num_cls, num_epoch=200,
     else:
         kwargs = {}
 
-    # setup network 
+    # setup network
     net = get_model('AddaNet', model=model, num_cls=num_cls,
             src_weights_init=src_weights)
-    
+
     # print network and arguments
     print(net)
+    file.write(net.__str__())
     print('Training Adda {} model for {}->{}'.format(model, src, tgt))
+    file.write('Training Adda {} model for {}->{}'.format(model, src, tgt))
 
     #######################################
     # Setup data for training and testing #
     #######################################
-    train_src_data = load_data(src, 'train', batch=batch, 
-        rootdir=join(datadir, src), num_channels=net.num_channels, 
+    train_src_data = load_data(src, 'train', file, batch=batch,
+        rootdir=join(datadir, src), num_channels=net.num_channels,
         image_size=net.image_size, download=True, kwargs=kwargs)
-    train_tgt_data = load_data(tgt, 'train', batch=batch, 
-        rootdir=join(datadir, tgt), num_channels=net.num_channels, 
+    train_tgt_data = load_data(tgt, 'train', file, batch=batch,
+        rootdir=join(datadir, tgt), num_channels=net.num_channels,
         image_size=net.image_size, download=True, kwargs=kwargs)
 
     ######################
     # Optimization setup #
     ######################
- 
+
     net_param = net.tgt_net.parameters()
     opt_net = optim.Adam(net_param, lr=lr, weight_decay=weight_decay, betas=betas)
-    opt_dis = optim.Adam(net.discriminator.parameters(), lr=lr, 
+    opt_dis = optim.Adam(net.discriminator.parameters(), lr=lr,
             weight_decay=weight_decay, betas=betas)
 
     ##############
     # Train Adda #
     ##############
     for epoch in range(num_epoch):
-        err = train(train_src_data, train_tgt_data, net, opt_net, opt_dis, epoch) 
+        err = train(train_src_data, train_tgt_data, net, opt_net, opt_dis, epoch, file)
         if err == -1:
             print("No suitable discriminator")
             break
-       
+
     ##############
     # Save Model #
     ##############
@@ -175,4 +178,3 @@ def train_adda(src, tgt, model, num_cls, num_epoch=200,
         model, src, tgt))
     print('Saving to', outfile)
     net.save(outfile)
-

@@ -56,10 +56,11 @@ if __name__ == '__main__':
     #######################
     # 1. Train Source Net #
     #######################
+    f = open('run/eval.txt', 'a+')
     if os.path.exists(src_net_file):
         print('Skipping source net training, exists:', src_net_file)
     else:
-        train_source(src, src_datadir, model, num_cls,
+        train_source(src, src_datadir, model, num_cls, file=f,
                 outdir=outdir, num_epoch=src_num_epoch, batch=batch,
                 lr=src_lr, betas=betas, weight_decay=weight_decay)
 
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     if os.path.exists(adda_net_file):
         print('Skipping adda training, exists:', adda_net_file)
     else:
-        train_adda(src, tgt, model, num_cls, num_epoch=adda_num_epoch,
+        train_adda(src, tgt, model, num_cls, file=f, num_epoch=adda_num_epoch,
                 batch=batch, datadir=datadir,
                 outdir=outdir, src_weights=src_net_file,
                 lr=adda_lr, betas=betas, weight_decay=weight_decay)
@@ -86,7 +87,7 @@ if __name__ == '__main__':
         print('Test set:', src)
         print('----------------')
         print('Evaluating {} source model: {}'.format(src, src_net_file))
-        load_and_test_net(src, src_datadir, src_net_file, model, num_cls,
+        load_and_test_net(src, src_datadir, src_net_file, model, num_cls, file=f,
                 dset='test', base_model=None)
 
 
@@ -94,12 +95,20 @@ if __name__ == '__main__':
     print('Test set:', tgt)
     print('----------------')
     print('Evaluating {} source model: {}'.format(src, src_net_file))
-    cm = load_and_test_net(tgt, tgt_datadir, src_net_file, model, num_cls,
+    cm = load_and_test_net(tgt, tgt_datadir, src_net_file, model, num_cls, file=f,
             dset='test', base_model=None)
 
     print(cm)
 
     print('Evaluating {}->{} adda model: {}'.format(src, tgt, adda_net_file))
-    cm = load_and_test_net(tgt, tgt_datadir, adda_net_file, 'AddaNet', num_cls,
+    cm = load_and_test_net(tgt, tgt_datadir, adda_net_file, 'AddaNet', num_cls, file=f,
             dset='test', base_model=model)
     print(cm)
+
+    f.close()
+
+    # cyclegan loss, opt 정보 복사해오기
+    os.system('cp cyclegan/checkpoints/*.txt runs/'.format(cm))
+
+    # 결과 파일 이름 변경
+    os.system('mv run/eval.txt runs/eval_{:.2f}.txt'.format(cm))

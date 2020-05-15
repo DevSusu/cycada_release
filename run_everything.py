@@ -30,4 +30,4 @@ for i in range(1,32):
 
     os.system('python train_adda.py')
     os.system('mv {}/mnist_svhn run/'.format(dataroot))
-    os.system('mv run run_percep_%d'.format(i))
+    os.system('mv run run_percep_{}'.format(i))

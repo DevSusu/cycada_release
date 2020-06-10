@@ -18,7 +18,7 @@ if __name__ == '__main__':
     ###################################
     # Set to your preferred data path #
     ###################################
-    datadir = '/x/devsusu/'
+    datadir = '/home/os1742/x/devsusu/'
     ###################################
 
     # Choose GPU ID
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     f.close()
 
     # cyclegan loss, opt 정보 복사해오기
-    os.system('cp checkpoints/*.txt runs/'.format(cm))
+    # os.system('cp checkpoints/cycada_svhn2mnist_noIdentity/*.txt run/')
 
     # 결과 파일 이름 변경
-    os.system('mv run/eval.txt runs/eval_{:.2f}.txt'.format(cm))
+    os.system('mv run/eval.txt run/eval_{:.2f}.txt'.format(cm))

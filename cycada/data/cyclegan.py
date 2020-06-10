@@ -23,8 +23,8 @@ class CycleGANDataset(data.Dataset):
         labels = []
         for basename in basenames:
             image_paths.append(os.path.join(self.root, basename))
-            # labels.append(int(basename.split('/')[-1].split('_')[0]))
-            labels.append(int(basename.split('\\')[-1].split('_')[0]))
+            labels.append(int(basename.split('/')[-1].split('_')[0]))
+            # labels.append(int(basename.split('\\')[-1].split('_')[0]))
         return image_paths, labels
 
     def __getitem__(self, index):
@@ -130,12 +130,13 @@ class Mnist2Svhn(CycleGANDataset):
     def __init__(self, root, train=True, transform=None, target_transform=None,
             download=False):
         if not train:
-            print('No test set for mnist2usps.')
+            print('No test set for mnist2svhn.')
             self.image_paths = []
         else:
             super(Mnist2Svhn, self).__init__(root, '*_fake_B.png',
                     transform=transform, target_transform=target_transform,
                     download=download)
+
 
 @register_data_params('mnist2svhn')
 class Mnist2SvhnParams(DatasetParams):
